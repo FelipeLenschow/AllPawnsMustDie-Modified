@@ -305,7 +305,6 @@ namespace AllPawnsMustDie
                 chessGame = new ChessGame(view, fullPathToChessExe, loader, reduceEngineStrength, Thread.CurrentThread.CurrentCulture);
                 chessGame.OnChessGameSelfPlayGameOver += ChessGameSelfPlayGameOverEventHandler;
                 chessGame.OnChessGameNormalPlayGameOver += ChessGameNormalPlayGameOverEventHandler;
-
                 if (fen == String.Empty)
                 {
                     chessGame.NewGame(playerColor, engineThinkTimeInMs);
@@ -443,6 +442,7 @@ namespace AllPawnsMustDie
         /// Color of the player (0 for white, 1 for black)
         /// </summary>
         public static bool Color;
+
         private void SerialRead(object sender, SerialDataReceivedEventArgs e)
         {
             //SerialPort _port = (SerialPort)sender;
@@ -457,13 +457,36 @@ namespace AllPawnsMustDie
         {
             try 
             {
+                /*
+                ChessEngineProcessLoader loader = new ChessEngineProcessLoader();
+                UCIChessEngine engine = new UCIChessEngine(loader);
+                engine.OnChessEngineResponseReceived += Handler;
+                Debug.WriteLine("-------------------------------------------- Eval ______________________________________");
+                UciEvalCommand Eval = new UciEvalCommand();
+                Eval.Execute(engine);*/
+
+
                 //Debug.WriteLine("Olha la ein, olha, mudou ein");
                 string lastEMove = textBoxMoveHistory.Text.Substring(textBoxMoveHistory.Text.Length - 6, 4);
                 if(lastEMove[0] == '|')
                     lastEMove = textBoxMoveHistory.Text.Substring(textBoxMoveHistory.Text.Length - 4, 4);
                 WriteSerial(lastEMove);
                 //Debug.WriteLine("-------------------------------------" + lastEMove);
-            } catch { }
+            } catch (Exception E) { E = null; }
+        }
+
+        /// <summary>
+        /// Send Evluation of the position to the phtsical boad
+        /// </summary>
+        /// 
+        public static void SendEval(string response)
+        {
+            Debug.WriteLine("---------------------" + response);
+            if (response.Substring(16, 7) == "       ")
+            {
+                Debug.WriteLine("Eval" + response.Substring(23, 5));
+                WriteSerial("Eval" + response.Substring(23, 5));
+            }
         }
 
         private static void WriteSerial(string Move)
@@ -472,7 +495,7 @@ namespace AllPawnsMustDie
             {
                 _port.WriteLine(Move);
                 Console.WriteLine("acabou de enviar serial");
-            } catch { }
+            } catch (NullReferenceException E) { E = null; }
         }
 
         private void VirtualClick(String move)
@@ -492,7 +515,6 @@ namespace AllPawnsMustDie
                 Debug.WriteLine(X + " " + Y + " " + (7 - (System.Convert.ToInt32(move[1]) - 49)) + " " + move[1]);
             }
         }
-
 
         private void CkbSerial_Click(object sender, EventArgs e)
         {
@@ -536,7 +558,6 @@ namespace AllPawnsMustDie
             var ports = SerialPort.GetPortNames();
             foreach (var port in ports) Comports.Items.Add(port);
         }
-
 
         #endregion
     }

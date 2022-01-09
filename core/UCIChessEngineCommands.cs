@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace AllPawnsMustDie
 {
@@ -120,6 +121,7 @@ namespace AllPawnsMustDie
         public UciGoCommand(string moveTimeInMilliseconds)
         {
             moveCommand = String.Format("go movetime {0}", moveTimeInMilliseconds);
+
         }
 
         /// <summary>UciGoCommand implementation</summary>
@@ -127,6 +129,7 @@ namespace AllPawnsMustDie
         public override void Execute(IChessEngine engine)
         {
             engine.SendCommandAsync(moveCommand, UCIChessEngine.BestMoveResponse);
+            
         }
 
         private readonly string moveCommand;
@@ -216,5 +219,29 @@ namespace AllPawnsMustDie
         }
 
         private readonly string fullPathToExe;
+
     }
+
+    #region Modification
+
+    /// <summary>
+    /// Get the position evaluation for the current possition 
+    /// </summary>
+    public class UciEvalCommand : UciChessEngineCommand
+    {
+
+ 
+        /// <summary>Eval implementation</summary>
+        /// <param name="engine">engine object</param>
+        public override void Execute(IChessEngine engine)
+        {
+            engine.SendCommandAsync("eval", "Final evaluation");
+        }
+
+
+    }
+    #endregion
+
+
+
 }

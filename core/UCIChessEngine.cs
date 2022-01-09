@@ -123,6 +123,7 @@ namespace AllPawnsMustDie
         /// <param name="e">The string sent to stdout</param>
         public void OnDataReceived(object sender, DataReceivedEventArgs e)
         {
+           // Debug.WriteLine("<=Engine: ", e.Data);
             // This level gets all responses from the engine, thinking lines, options, debug, etc
             // However if we get a null event, filter it out since there is nothing we can do
             if (e.Data == null)
@@ -132,6 +133,7 @@ namespace AllPawnsMustDie
 
             string data = e.Data;
             SendVerboseEvent(data); // let the verbose handler get the empty lines
+            //Debug.WriteLine(data);
 
             if (data == String.Empty)
             {
@@ -152,6 +154,7 @@ namespace AllPawnsMustDie
                 SendVerboseEvent(String.Format("Fixed formatting to \"{0}\"", data));
             }
 
+
             // Set to an empty one since it's a value type...but we only care
             // if we actually find one.
             string dummyCommand = "{OnDataReceived}";
@@ -165,7 +168,8 @@ namespace AllPawnsMustDie
             }
             bool foundCommand = (String.Compare(dummyCommand, cep.Command) != 0);
             bool dequeue = false;
-            
+
+
             if (foundCommand)
             {
                 // First check if we need to wait on a ReadyOK response, this happens
@@ -177,6 +181,12 @@ namespace AllPawnsMustDie
                         dequeue = true;         // This dequeues the original command
                         commandResponse = data; // nothing was actually queued for the "IsReady" write
                     }
+                }
+                else if (data.StartsWith("Final evaluation"))
+                {
+                    dequeue = true;
+                    commandResponse = data;
+                    //Debug.WriteLine("aeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
                 }
                 else if (data.StartsWith(cep.Expected))
                 {
@@ -192,6 +202,7 @@ namespace AllPawnsMustDie
                         bestMove = parts[1];
                     }
                 }
+
             }
 
             // Remove item if processed and notify listeners
@@ -430,6 +441,7 @@ namespace AllPawnsMustDie
             ((IChessEngine)this).Reset();
         }
 
+        /*
         /// <summary>
         /// Start analyzing the current position for the best move
         /// </summary>
@@ -440,6 +452,7 @@ namespace AllPawnsMustDie
             UciGoCommand command = new UciGoCommand(timeInMilliseconds);
             command.Execute(this);
         }
+        */
 
         /// <summary>
         /// Sets a given option name with a value (if provided)
@@ -461,6 +474,8 @@ namespace AllPawnsMustDie
             UciLoadEngineCommand command = new UciLoadEngineCommand(pathToEngine);
             command.Execute(this);
         }
+
+
         #endregion
 
         #region Public Properties
@@ -519,5 +534,8 @@ namespace AllPawnsMustDie
         private object queue_lock;
         private Thread queueThread;
         #endregion
+
+
+
     }
 }

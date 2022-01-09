@@ -106,7 +106,7 @@ namespace AllPawnsMustDie
                 //Hermann28_32
                 //Ruffian 105
 
-                if (exeName.StartsWith("stockfish_8"))
+                if (exeName.StartsWith("stockfish_14.1_win_x64_avx2"))
                 {
                     UciSetOptionCommand command = new UciSetOptionCommand("Skill Level", "0");
                     command.Execute(engine);
@@ -210,6 +210,7 @@ namespace AllPawnsMustDie
         {
             UciGoCommand command = new UciGoCommand(thinkTime.ToString());
             command.Execute(engine);
+
         }
 
         /// <summary>
@@ -597,7 +598,7 @@ namespace AllPawnsMustDie
         /// <param name="response"></param>
         private void OnEngineNormalPlayResponseHandler(string response)
         {
-            Debug.WriteLine(String.Concat("Response: ", response));
+            //Debug.WriteLine(String.Concat("Response: ", response));
 
             // If this is true, it means we're updating our position with the engine
             // (e.g. syncing up after a move was applied locally to our object)
@@ -630,6 +631,10 @@ namespace AllPawnsMustDie
                 Debug.WriteLine(String.Format("WhCastle: {0}", board.WhiteCastlingRights.ToString()));
                 Debug.WriteLine(String.Format("BlCastle: {0}", board.BlackCastlingRights.ToString()));
             }
+            else if (response.StartsWith("Final"))
+            {
+                APMD_Form.SendEval(response);
+            }
         }
 
         /// <summary>
@@ -660,7 +665,7 @@ namespace AllPawnsMustDie
         private void ChessEngineVerboseOutputReceivedEventHandler(object sender, ChessEngineResponseReceivedEventArgs e)
         {
             // Removing the thinking lines to declutter the debug outbput
-            if (!e.Response.StartsWith("info"))
+            if (!e.Response.Contains("info") && !e.Response.Contains('|') && !e.Response.Contains("--+--") && !e.Response.Contains("lassical") && !e.Response.Contains("NNUE "))
             {
                 Debug.WriteLine(String.Concat("<=Engine: ", e.Response));
             }
@@ -701,6 +706,9 @@ namespace AllPawnsMustDie
             updatingPosition = true;
             UciPositionCommand command = new UciPositionCommand(board.CurrentFEN);
             command.Execute(engine);
+
+            UciEvalCommand commandEval = new UciEvalCommand();
+            commandEval.Execute(engine);
         }
         
         /// <summary>
@@ -783,5 +791,7 @@ namespace AllPawnsMustDie
         private CultureInfo currentCultureInfo;
         private readonly string ThinkingLocalized;
         #endregion
+
+
     }
 }
