@@ -314,8 +314,13 @@ namespace AllPawnsMustDie
                     chessGame.NewPosition(playerColor, fen, engineThinkTimeInMs);
                 }
 
+                if (playerColor == PieceColor.Black)
+                    SendNewGame('b');
+                else SendNewGame('w');
+
                 // Trigger Paint event (draws the initial board)
                 Invalidate();
+
             }
             else
             {
@@ -443,6 +448,11 @@ namespace AllPawnsMustDie
         /// </summary>
         public static bool Color;
 
+        private void SendNewGame(char color)
+        {
+            
+            WriteSerial("N" + color);
+        }
         private void SerialRead(object sender, SerialDataReceivedEventArgs e)
         {
             //SerialPort _port = (SerialPort)sender;
@@ -457,21 +467,19 @@ namespace AllPawnsMustDie
         {
             try 
             {
-                /*
-                ChessEngineProcessLoader loader = new ChessEngineProcessLoader();
-                UCIChessEngine engine = new UCIChessEngine(loader);
-                engine.OnChessEngineResponseReceived += Handler;
-                Debug.WriteLine("-------------------------------------------- Eval ______________________________________");
-                UciEvalCommand Eval = new UciEvalCommand();
-                Eval.Execute(engine);*/
+                string lastEMove;
+                //if (Color == false) //black
 
-
-                //Debug.WriteLine("Olha la ein, olha, mudou ein");
-                string lastEMove = textBoxMoveHistory.Text.Substring(textBoxMoveHistory.Text.Length - 6, 4);
-                if(lastEMove[0] == '|')
+                lastEMove = textBoxMoveHistory.Text.Substring(textBoxMoveHistory.Text.Length - 6, 4);
+                bool colorLastMove = false;
+                if (lastEMove[0] == '|')
+                {
                     lastEMove = textBoxMoveHistory.Text.Substring(textBoxMoveHistory.Text.Length - 4, 4);
-                WriteSerial(lastEMove);
-                //Debug.WriteLine("-------------------------------------" + lastEMove);
+                    colorLastMove = true;
+                }
+
+                if (colorLastMove == Color)
+                    WriteSerial("M" + lastEMove);
             } catch (Exception E) { E = null; }
         }
 
@@ -484,18 +492,19 @@ namespace AllPawnsMustDie
             Debug.WriteLine("---------------------" + response);
             if (response.Substring(16, 7) == "       ")
             {
-                Debug.WriteLine("Eval" + response.Substring(23, 5));
-                WriteSerial("Eval" + response.Substring(23, 5));
+                Debug.WriteLine("E" + response.Substring(23, 5));
+                WriteSerial("E" + response.Substring(23, 5));
             }
+        
         }
 
         private static void WriteSerial(string Move)
         {
-            try
-            {
-                _port.WriteLine(Move);
-                Console.WriteLine("acabou de enviar serial");
-            } catch (NullReferenceException E) { E = null; }
+                
+                _port.Write(Move);
+                Console.WriteLine("acabou de enviar serial: ------------------------ " + Move);
+
+
         }
 
         private void VirtualClick(String move)
